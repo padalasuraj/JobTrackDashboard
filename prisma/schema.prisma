@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String        @id @default(cuid())
+  name              String
+  email             String        @unique
+  passwordHash      String?
+  googleId          String?       @unique
+  avatarUrl         String?
+  emailVerifiedAt   DateTime?
+  verificationToken String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  applications      Application[]
+  resumes           Resume[]
+  profiles          Profile[]
+  reminders         Reminder[]
+}
+
+model Company {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  websiteUrl String?
+  jobs       Job[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Job {
+  id             String        @id @default(cuid())
+  companyId      String
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title          String
+  jobId          String?
+  location       String?
+  workMode       String        @default("UNKNOWN")
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryCurrency String        @default("INR")
+  experience     String?
+  employmentType String?
+  description    String?
+  skills         String?
+  jobUrl         String?
+  applicationUrl String?
+  companyUrl     String?
+  postedDate     DateTime?
+  closingDate    DateTime?
+  source         String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  applications   Application[]
+
+  @@index([title])
+  @@index([jobId])
+  @@index([closingDate])
+}
+
+model Resume {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  targetRole   String?
+  version      String        @default("1.0")
+  fileName     String?
+  filePath     String?
+  mimeType     String?
+  sizeBytes    Int?
+  description  String?
+  isDefault    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+
+  @@index([userId])
+}
+
+model Profile {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String
+  name         String
+  email        String
+  phone        String?
+  location     String?
+  linkedin     String?
+  github       String?
+  portfolio    String?
+  education    String?
+  experience   String?
+  skills       String?
+  otherInfo    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+
+  @@index([userId])
+}
+
+model Application {
+  id           String              @id @default(cuid())
+  userId       String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId        String
+  job          Job                 @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  resumeId     String?
+  resume       Resume?             @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  profileId    String?
+  profile      Profile?            @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  status       String              @default("SAVED")
+  appliedAt    DateTime?
+  progressUrl  String?
+  recruiterUrl String?
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  events       ApplicationEvent[]
+  interviews   Interview[]
+  reminders    Reminder[]
+  noteItems     Note[]
+
+  @@unique([userId, jobId])
+  @@index([userId, status])
+  @@index([resumeId])
+  @@index([profileId])
+}
+
+model ApplicationEvent {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type          String
+  description   String
+  timestamp     DateTime    @default(now())
+
+  @@index([applicationId, timestamp])
+}
+
+model Interview {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  round         String
+  type          String?
+  scheduledAt   DateTime
+  duration      Int?
+  meetingUrl    String?
+  interviewer   String?
+  notes         String?
+  result        String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([applicationId])
+  @@index([scheduledAt])
+}
+
+model Reminder {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type          String
+  message       String
+  scheduledAt   DateTime
+  completed     Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([userId, completed, scheduledAt])
+  @@index([applicationId])
+}
+
+model Note {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  body          String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([applicationId])
+}
