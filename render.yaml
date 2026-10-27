@@ -1,0 +1,28 @@
+# Deploy only the Java API. Host the frontend separately on Vercel.
+# Database values come from a separately created Neon Free project.
+services:
+  - type: web
+    name: jobtrack-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: APP_URL
+        sync: false
+      - key: JDBC_DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DEV_EMAIL_LOG
+        value: "false"
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss512k"

@@ -1,17 +1,26 @@
-FROM node:24-alpine AS deps
+# Optional local/self-hosted frontend image. Vercel builds Next.js directly.
+FROM node:22-alpine AS dependencies
 WORKDIR /app
-COPY package*.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:24-alpine AS builder
+FROM node:22-alpine AS build
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV BUILD_STANDALONE=true
+ARG BACKEND_URL=http://backend:8080
+ENV BACKEND_URL=$BACKEND_URL
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-RUN npx prisma generate && npm run build
+RUN mkdir -p public && npm run build
 
-FROM node:24-alpine AS runner
+FROM node:22-alpine AS runtime
 WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app ./
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
+RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 nextjs
+COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=build --chown=nextjs:nodejs /app/public ./public
+USER nextjs
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

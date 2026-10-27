@@ -1,0 +1,49 @@
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+  tomcat:
+    threads:
+      max: 30
+      min-spare: 2
+    max-http-form-post-size: 32KB
+spring:
+  application:
+    name: jobtrack-api
+  datasource:
+    url: jdbc:h2:file:./data/jobtrack;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password: ""
+    hikari:
+      maximum-pool-size: 4
+      minimum-idle: 0
+      connection-timeout: 30000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  lifecycle:
+    timeout-per-shutdown-phase: 8s
+app:
+  url: ${APP_URL:http://localhost:3000}
+  cookie-secure: ${COOKIE_SECURE:false}
+  google-client-id: ${GOOGLE_CLIENT_ID:}
+  google-client-secret: ${GOOGLE_CLIENT_SECRET:}
+  resend-api-key: ${RESEND_API_KEY:}
+  email-from: ${EMAIL_FROM:}
+  dev-email-log: ${DEV_EMAIL_LOG:false}
+logging:
+  level:
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer: ERROR

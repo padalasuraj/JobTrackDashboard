@@ -1,0 +1,15 @@
+.git
+.next
+node_modules
+.env
+.env.*
+backend/.env
+backend/data
+backend/target
+.tools
+*.tsbuildinfo
+playwright-report
+test-results
+artifacts
+uploads
+prisma

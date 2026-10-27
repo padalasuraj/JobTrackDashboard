@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: ${JDBC_DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+app:
+  url: ${APP_URL}
+  cookie-secure: true
+  dev-email-log: false

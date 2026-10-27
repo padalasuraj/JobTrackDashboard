@@ -5,3 +5,13 @@ prisma/dev.db
 uploads
 coverage
 *.tsbuildinfo
+
+backend/target/
+backend/data/
+backend/.env
+.tools/
+playwright-report/
+test-results/
+artifacts/
+.env.local
+.env.*.local

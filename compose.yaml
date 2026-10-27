@@ -1,0 +1,47 @@
+# Optional Docker setup. The default developer setup needs no Docker or database account.
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: jobtrack
+      POSTGRES_USER: jobtrack
+      POSTGRES_PASSWORD: ${LOCAL_DATABASE_PASSWORD:-jobtrack-local-only}
+    volumes:
+      - jobtrack-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobtrack -d jobtrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/jobtrack
+      SPRING_DATASOURCE_USERNAME: jobtrack
+      SPRING_DATASOURCE_PASSWORD: ${LOCAL_DATABASE_PASSWORD:-jobtrack-local-only}
+      APP_URL: http://localhost:3000
+      COOKIE_SECURE: "false"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      args:
+        BACKEND_URL: http://backend:8080
+    environment:
+      BACKEND_URL: http://backend:8080
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  jobtrack-postgres:

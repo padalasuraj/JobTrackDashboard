@@ -11,3 +11,8 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+
+npm.cmd run lint       passed
+npm.cmd run typecheck  passed
+npm.cmd test           passed
+npm.cmd run build      passed

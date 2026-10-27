@@ -1,5 +1,10 @@
 import { AuthForm } from "@/components/AuthForm";
+import { Suspense } from "react";
 
 export default function RegisterPage() {
-  return <AuthForm mode="register" />;
+  return (
+    <Suspense>
+      <AuthForm mode="register" />
+    </Suspense>
+  );
 }
